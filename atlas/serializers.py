@@ -14,3 +14,26 @@ class AtlasSerializer(serializers.Serializer):
         instance.country = validated_data.get("country", instance.country)
         instance.save()
         return instance 
+    
+class AtlasSerializer(serializers.HyperlinkedModelSerializer):
+    owner = serializers.ReadOnlyField(source="owner.username")
+    highlight = serializers.HyperlinkedIdentityField(
+        view_name="atlas-highlight", format="html"
+    )
+
+    class Meta:
+        model = Atlas 
+        fields = [
+            "created",
+            "dishes",
+            "owner"
+        ]
+
+class UserSerializer(serializers.HyperlinkedModelSerializer):
+    atlas = serializers.HyperlinkedRelatedField(
+        many=True, view_name="atlas-detail", read_only=True
+    )
+
+    class Meta:
+        model = User 
+        fields = ["url", "id", "username", "atlas"]

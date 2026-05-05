@@ -1,10 +1,12 @@
-from django.urls import path
-from atlas import views
-from rest_framework.urlpatterns import format_suffix_patterns
+from django.urls import path, include 
+from rest_framework.routers import DefaultRouter
+
+from atlas import views 
+
+router = DefaultRouter() 
+router.register(r'atlas', views.AtlasViewSet, basename="atlas")
+router.register(r'users', views.UserViewSet, basename="user")
 
 urlpatterns = [
-    path("atlas/<int:pk>/", views.AtlasDetail.as_view()),
-    path("atlas/", views.AtlasList.as_view())
+    path("", include(router.urls))
 ]
-
-urlpatterns = format_suffix_patterns(urlpatterns)
