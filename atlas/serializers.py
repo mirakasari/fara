@@ -1,20 +1,7 @@
 from rest_framework import serializers
-from atlas.models import Atlas, DISHES,  COUNTRY_CHOICES
+from atlas.models import Atlas
+from django.contrib.auth.models import User
 
-class AtlasSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
-    dish = serializers.CharField(required=False, allow_blank=True)
-    country = serializers.ChoiceField(choices=COUNTRY_CHOICES, default='friendly')
-
-    def create(self, validated_data):
-        return Atlas.objects.create(**validated_data)
-    
-    def update(self, instance, validated_data):
-        instance.dishes = validated_data.get("dishes", instance.dishes)
-        instance.country = validated_data.get("country", instance.country)
-        instance.save()
-        return instance 
-    
 class AtlasSerializer(serializers.HyperlinkedModelSerializer):
     owner = serializers.ReadOnlyField(source="owner.username")
     highlight = serializers.HyperlinkedIdentityField(
@@ -22,11 +9,16 @@ class AtlasSerializer(serializers.HyperlinkedModelSerializer):
     )
 
     class Meta:
-        model = Atlas 
+        model = Atlas
         fields = [
+            "url",
+            "id",
             "created",
-            "dishes",
-            "owner"
+            "country",
+            "cuisine",
+            "dish",
+            "owner",
+            "highlight"
         ]
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
@@ -35,5 +27,5 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
     )
 
     class Meta:
-        model = User 
+        model = User
         fields = ["url", "id", "username", "atlas"]

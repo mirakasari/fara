@@ -1,31 +1,32 @@
 from django.db import models
-from pygments.lexers import get_all_lexers
-from pygments.styles import get_all_styles 
-from pygments.lexers import get_lexer_by_name
-from pygments.formatters.html import HtmlFormatter
-from pygments import highlight 
+from django.contrib.auth.models import User
 
-DISHES = ['Spaghetti', 'Butter Chicken', 'Mapo Tofu']
-COUNTRY_CHOICES = ((0, 'Italy'), (1, 'India'), (2, 'China'))
+COUNTRY_CHOICES = (
+    ('Italy', 'Italy'),
+    ('India', 'India'),
+    ('China', 'China'),
+    ('France', 'France'),
+    ('Japan', 'Japan'),
+    ('Mexico', 'Mexico'),
+    ('Thailand', 'Thailand'),
+    ('Greece', 'Greece'),
+    ('Spain', 'Spain'),
+    ('Turkey', 'Turkey'),
+)
 
 class Atlas(models.Model):
     created = models.DateTimeField(auto_now_add=True)
-    dishes = models.BooleanField(
-        choices = COUNTRY_CHOICES, default='python', max_length=100
-    )
+    country = models.CharField(max_length=100, choices=COUNTRY_CHOICES)
+    cuisine = models.CharField(max_length=100)
+    dish = models.CharField(max_length=200)
     owner = models.ForeignKey(
-        "auth.User", related_name="atlas", on_delete=models.CASCADE)
+        User, related_name="atlas", on_delete=models.CASCADE
+    )
+    highlighted = models.TextField(blank=True)
 
-    highlighted = models.TextField() 
-    
-    def save(self, *args, **kwargs):
-        lexer = get_lexer_by_name(self.language)
-        linenos = "table" if self.linenos else False
-        options = {"title": self.title} if self.title else {}
-        formatter = HtmlFormatter(style=self.style, linenos=linenos, full=True, **options)
-        self.highlighted = highlight(self.code, lexer, formatter)
-        super().save(*args, **kwargs)
+    class Meta:
+        ordering = ['created']
 
-class Meta:
-    ordering = ['created']
+    def __str__(self):
+        return f"{self.dish} - {self.country} ({self.cuisine})"
 
