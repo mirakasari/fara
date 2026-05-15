@@ -72,6 +72,18 @@ class AtlasViewSet(viewsets.ModelViewSet):
         atlas = self.get_object()
         return Response(atlas.highlighted)
 
+    @action(detail=True, methods=["post", "delete"], permission_classes=[permissions.IsAuthenticated], url_path="like")
+    def like(self, request, *args, **kwargs):
+        atlas = self.get_object()
+        if request.method == 'POST':
+            atlas.likes.add(request.user)
+        else:
+            atlas.likes.remove(request.user)
+        return Response({
+            'liked': atlas.likes.filter(pk=request.user.pk).exists(),
+            'likes_count': atlas.likes.count()
+        })
+
     @action(detail=True, methods=["get"], url_path="recommended-restaurant")
     def recommended_restaurant(self, request, *args, **kwargs):
         atlas = self.get_object()

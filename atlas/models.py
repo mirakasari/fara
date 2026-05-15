@@ -22,10 +22,16 @@ class Atlas(models.Model):
     restaurant = models.ForeignKey(
         'Restaurant', related_name="dishes", on_delete=models.SET_NULL, null=True, blank=True
     )
+    country_obj = models.ForeignKey(
+        'Country', related_name='atlas_entries', on_delete=models.SET_NULL, null=True, blank=True
+    )
     owner = models.ForeignKey(
         User, related_name="atlas", on_delete=models.CASCADE
     )
     highlighted = models.TextField(blank=True)
+    likes = models.ManyToManyField(
+        User, related_name="liked_atlas", blank=True
+    )
 
     class Meta:
         ordering = ['created']
@@ -50,4 +56,17 @@ class Restaurant(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.city}, {self.country}"
+
+
+class Country(models.Model):
+    """Normalized Country model for consistent country data."""
+    name = models.CharField(max_length=100, unique=True)
+    code = models.CharField(max_length=10, blank=True)
+    slug = models.SlugField(max_length=110, unique=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
 

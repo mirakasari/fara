@@ -26,6 +26,12 @@ class AtlasSerializer(serializers.HyperlinkedModelSerializer):
     highlight = serializers.HyperlinkedIdentityField(
         view_name="atlas-highlight", format="html"
     )
+    # Prefer the normalized country if available, otherwise fall back to the string field
+    country = serializers.SerializerMethodField()
+    # Prefer the normalized country if available, otherwise fall back to the string field
+    country = serializers.SerializerMethodField()
+    likes_count = serializers.SerializerMethodField()
+    is_liked = serializers.SerializerMethodField()
 
     class Meta:
         model = Atlas
@@ -38,9 +44,30 @@ class AtlasSerializer(serializers.HyperlinkedModelSerializer):
             "dish",
             "restaurant",
             "restaurant_name",
+            "likes_count",
+            "is_liked",
             "owner",
             "highlight"
         ]
+
+    def get_country(self, obj):
+        if getattr(obj, 'country_obj', None):
+            return obj.country_obj.name
+        return obj.country
+
+    def get_country(self, obj):
+        if getattr(obj, 'country_obj', None):
+            return obj.country_obj.name
+        return obj.country
+
+    def get_likes_count(self, obj):
+        return obj.likes.count()
+
+    def get_is_liked(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user or not request.user.is_authenticated:
+            return False
+        return obj.likes.filter(pk=request.user.pk).exists()
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     atlas = serializers.HyperlinkedRelatedField(
