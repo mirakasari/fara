@@ -10,7 +10,4 @@ router.register(r'restaurants', views.RestaurantViewSet, basename="restaurant")
 
 urlpatterns = [
     path("", include(router.urls)),
-    path("countries/", views.CountryList.as_view(), name="country-list"),
-    path("cuisines/", views.CuisineList.as_view(), name="cuisine-list"),
-    path("dishes/", views.DishList.as_view(), name="dish-list"),
 ]
