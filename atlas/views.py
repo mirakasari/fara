@@ -1,5 +1,15 @@
-from atlas.models import Atlas
-from atlas.serializers import AtlasSerializer, UserSerializer
+from atlas.models import Atlas, Restaurant
+from atlas.serializers import AtlasSerializer, UserSerializer, RestaurantSerializer, CountrySerializer, CuisineSerializer, DishSerializer
+from rest_framework import generics
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.reverse import reverse
+from rest_framework import renderers
+from rest_framework import viewsets
+from django.contrib.auth.models import User
+from rest_framework import permissions
+from rest_framework.decorators import action
+from django.db.models import Count
 from rest_framework import generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -40,6 +50,10 @@ def api_root(request, format=None):
         {
             "users": reverse("user-list", request=request, format=format),
             "atlas": reverse("atlas-list", request=request, format=format),
+            "restaurants": reverse("restaurant-list", request=request, format=format),
+            "countries": reverse("country-list", request=request, format=format),
+            "cuisines": reverse("cuisine-list", request=request, format=format),
+            "dishes": reverse("dish-list", request=request, format=format),
         }
     )
 
@@ -59,3 +73,33 @@ class AtlasViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
+class RestaurantViewSet(viewsets.ModelViewSet):
+    queryset = Restaurant.objects.all()
+    serializer_class = RestaurantSerializer
+    permission_classes = [IsAdminOrReadOnly]
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+class CountryList(generics.ListAPIView):
+    serializer_class = CountrySerializer
+
+    def get_queryset(self):
+        # Return predefined country choices
+        from atlas.models import COUNTRY_CHOICES
+        return [{'country': choice[0]} for choice in COUNTRY_CHOICES]
+
+class CuisineList(generics.ListAPIView):
+    serializer_class = CuisineSerializer
+
+    def get_queryset(self):
+        # Return distinct cuisines from Atlas entries
+        return Atlas.objects.values('cuisine').distinct().order_by('cuisine')
+
+class DishList(generics.ListAPIView):
+    serializer_class = DishSerializer
+
+    def get_queryset(self):
+        # Return distinct dishes from Atlas entries
+        return Atlas.objects.values('dish').distinct().order_by('dish')
